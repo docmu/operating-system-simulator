@@ -10,7 +10,16 @@ public class Dispatcher {
 	private ArrayList<Process> readyQueue;
 	private Clock clock = new Clock();
 	
-	public void updateState(ArrayList<Process> readyQueue) {
+	public void updateState(Process process) {
+		if(memLeft <= MAX_MEMORY) {
+			process.pcb.setState("READY");
+		} else {
+			process.pcb.setState("WAIT");
+		}
+	}
+	
+	//move all processes from NEW to either READY or WAIT
+	public void initState(ArrayList<Process> readyQueue) {
 		this.readyQueue = readyQueue;
 		for(int i = 0; i < readyQueue.size(); i++) {
 			switch (readyQueue.get(i).pcb.getState()) {
@@ -21,25 +30,22 @@ public class Dispatcher {
 						readyQueue.get(i).pcb.setState("READY");
 					} else {
 						readyQueue.get(i).pcb.setState("WAIT");
+						//not enough memory, move to waiting queue
+//						waitingQueue.add(readyQueue.get(i));
+//						readyQueue.remove(readyQueue.get(i));
 					}
-				case "READY":
-//					System.out.println("in ready state");
-					break;
-//				case "RUN":
-//					break;
-				case "WAIT":
-//					System.out.println("in wait state");
-					break;
-//				case "EXIT":
-//					memUsage = readyQueue.get(i).pcb.getMemRequirement();
-//					memLeft +=  memUsage;
-//					break;
+				break;
 				default:
-					System.out.println("Cannot do job");
+					System.out.println("Error");
 					break;
-		}
+			}
 		
 		}
+	}
+	
+	public void terminateProcess(Process process) {
+		process.pcb.setState("TERMINATED");
+		memLeft += process.pcb.getMemRequirement();
 	}
 	
 	//execute command by line
@@ -48,8 +54,10 @@ public class Dispatcher {
 		int max = Integer.parseInt(line[2]);
 		int numCycles = operationCycle(min, max);
 		process.setNumCycles(numCycles);
-		System.out.print(" set num cycles " + process.getNumCycles() + ":");
+
 		if(line[0].equals("I/O")) {
+			//update state to WAIT
+			process.pcb.setState("WAIT");
 			//move process to waiting queue
 			waitingQueue.add(process);
 			readyQueue.remove(process);
@@ -57,22 +65,23 @@ public class Dispatcher {
 			for(int i = 1; i <= numCycles; i++) {
 				clock.count();
 				process.setNumCycles(process.getNumCycles() - 1);
-				System.out.print(" " + process.getNumCycles());
 			}
-			System.out.println();
 			//move process back to readyQueue once finished
 			readyQueue.add(process);
 			waitingQueue.remove(process);
 			
 		} else if(line[0].equals("CALCULATE")) {
+			//update state to RUN
+			process.pcb.setState("RUN");
 			//stays on cpu for n cycles
 			for(int i = 1; i <= numCycles; i++) {
 				clock.count();
 				process.setNumCycles(process.getNumCycles() - 1);
-				System.out.print(" " + process.getNumCycles());
 			}
-			System.out.println();
 		}
+		
+		//update state
+		updateState(process);
 		//reset the clock
 		clock.reset();
 	}

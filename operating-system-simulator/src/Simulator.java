@@ -38,6 +38,7 @@ public class Simulator{
 		
 		schedule(schedulerType);
 		readFile();
+		print(readyQueue);
 	}
 	
 	public static void initProcess(String fileName) throws FileNotFoundException, IOException {
@@ -62,37 +63,70 @@ public class Simulator{
 				scheduler.PriorityScheduling(readyQueue);
 				break;
 		}
-		dispatcher.updateState(readyQueue);
+		dispatcher.initState(readyQueue);
 	}
 	
 	//execute commands
+//	public static void readFile() throws FileNotFoundException, IOException {
+//		if(readyQueue.isEmpty()) return;
+//		
+//		BufferedReader br = new BufferedReader(new FileReader(readyQueue.get(0).name));
+//		String line; 
+//		//read each line of process
+//		while ((line = br.readLine()) != null) {
+//			//loop through all processes
+//			for(int i = 0; i < readyQueue.size(); i++) {
+//				String[] instruction = line.split(" ");
+//				if(counter > 0) {
+//				    dispatcher.execute(readyQueue.get(i), instruction);
+//				 }
+//				 //move onto next line of program when done executing instruction
+//				 counter++;
+//			     process.setCurrLine(counter);
+//			}
+//		}
+//		//reset line counter
+//		counter = 0;
+//		//process is finished, terminate it
+////		dispatcher.terminate(readyQueue.get(i));
+////		readyQueue.remove(readyQueue.get(0));
+//		
+//		readFile();
+//			
+//	}
+	
+	//execute commands
 	public static void readFile() throws FileNotFoundException, IOException {
+		BufferedReader br = null;
 		//loop through all processes
 		for(int i = 0; i < readyQueue.size(); i++) {
-			System.out.println(i + " " + readyQueue.get(0));
-			BufferedReader br = new BufferedReader(new FileReader(readyQueue.get(0).name));
-			    String line; 
-			    //read each line of process
-			    while ((line = br.readLine()) != null) {
-			    	String[] instruction = line.split(" ");
-			    	if(counter > 0) {
-			    		for(int j = 0; j < instruction.length; j++) {
-			    			System.out.print(instruction[j]);
-			    		}
-			    		dispatcher.execute(readyQueue.get(i), instruction);
-			    	}
-			    	//move onto next line of program when done executing instruction
-			    	counter++;
-		    		process.setCurrLine(counter);
+//			System.out.println("readyQueue(0) " + readyQueue.get(0));
+			br = new BufferedReader(new FileReader(readyQueue.get(0).name));
+			String line; 
+			//read each line of process
+			while ((line = br.readLine()) != null) {
+			    String[] instruction = line.split(" ");
+			    if(counter > 0) {
+			    	dispatcher.execute(readyQueue.get(i), instruction);
 			    }
-			    //reset line counter
-			    counter = 0;
+			    //move onto next line of program when done executing instruction
+			    counter++;
+		    	process.setCurrLine(counter);
+			}
+			//reset line counter
+			counter = 0;
+			//process is finished, terminate it
+			dispatcher.terminateProcess(readyQueue.get(i));
+//			    readyQueue.remove(readyQueue.get(0));
 			
 			System.out.println();
 		}	
+		
+		br.close();
 	}
 	
 	public static void print(ArrayList<Process> queue) {
+//		System.out.println("inside print");
 		for(int i=0; i< queue.size(); i++) {
 			System.out.println(queue.get(i));
 		}
