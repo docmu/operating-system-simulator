@@ -13,29 +13,23 @@ import java.util.Stack;
 public class Simulator{
 	
 	public static Process process;
-//	public static Process[] processes;
-	public static ArrayList<Process> processes = new ArrayList<Process>();
+	public static ArrayList<Process> readyQueue = new ArrayList<Process>();
 	public static Scheduler scheduler = new Scheduler();
-	public static final int MAX_MEMORY = 2048;
-	public static int memUsage;
-	public static int memLeft;
-	public static int run = 0;
-	public static int quantum = 3;
+	public static Dispatcher dispatcher = new Dispatcher();
+	private static Clock clock = new Clock();
+	private static int counter = 0;
 	
-	public static void main(String[] args) throws IOException {
-		
+	public static void main(String[] args) throws IOException {	
 		System.out.println("Enter the number of processes: ");	
 		Scanner in = new Scanner(System.in);
 		int numProcesses = in.nextInt();
-//		processes = new Process[numProcesses];
 		
 		for(int i = 0; i < numProcesses; i++) {
 			System.out.println(i + ": Enter the program name: ");
 			in = new Scanner(System.in);
 			String program = in.next();
-			parseFile(program);	
-			processes.add(process);
-//			processes[i] = process;
+			initProcess(program);	
+			readyQueue.add(process);
 		}
 		
 		System.out.println("Choose a scheduling algorithm:" + "\n1:Shortest Job First" + "\n2:Priority Scheduling");
@@ -43,71 +37,69 @@ public class Simulator{
 		int schedulerType = in.nextInt();
 		
 		schedule(schedulerType);
+		readFile();
+//		print(readyQueue);
+	}
+	
+	public static void initProcess(String fileName) throws FileNotFoundException, IOException {
+		if(!fileName.contains(".txt")) {
+			fileName += ".txt";
+		}
+		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+			process = new Process();
+		    process.setName(fileName);
+		    String memReq = br.readLine();
+		    process.pcb.setMemRequirement(Integer.parseInt(memReq));
+		}
 	}
 	
 	//invoke the scheduling algorithm
 	public static void schedule(int n) {	
 		switch(n) {
 			case 1:
-				scheduler.SJF(processes);
+				scheduler.SJF(readyQueue);
 				break;
 			case 2:
-				scheduler.PriorityScheduling(processes);
+				scheduler.PriorityScheduling(readyQueue);
 				break;
 		}
+		dispatcher.init(readyQueue);
 	}
 	
-	//parse the file
-	public static void parseFile(String fileName) throws FileNotFoundException, IOException {
-		if(!fileName.contains(".txt")) {
-			fileName += ".txt";
-		}
-		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-			process = new Process();
-		    process.pcb.setName(fileName);
-		    String memReq = br.readLine();
-		    process.pcb.setMemRequirement(Integer.parseInt(memReq));
-//		    System.out.println(memReq);
-//		    String line;
-		    
-		    //parse the file while there are lines to read
-//		    while ((line = br.readLine()) != null) {
-//		    	System.out.println(line);
-//		    }
-		}
+	//execute commands
+	public static void readFile() throws FileNotFoundException, IOException {
+		System.out.println("inside readFile");
+		//loop through all processes
+		for(int i = 0; i < readyQueue.size(); i++) {
+			System.out.println(i + " " + readyQueue.get(0));
+			BufferedReader br = new BufferedReader(new FileReader(readyQueue.get(0).name));
+//				System.out.println(readyQueue.get(i).name);
+			    String line; 
+			    //read each line of process
+			    while ((line = br.readLine()) != null) {
+			    	String[] instruction = line.split(" ");
+//			    	for(int j = 0; j < instruction.length; j++) {
+			    	if(counter > 0) {
+			    		for(int j = 0; j < instruction.length; j++) {
+			    			System.out.print(instruction[j]);
+			    		}
+			    		dispatcher.execute(readyQueue.get(i), instruction);
+			    	}
+//			    	}
+			    	//move onto next line of program when done executing instruction
+			    	counter++;
+		    		process.setCurrLine(counter);
+			    }
+			    counter = 0;
+			
+			System.out.println();
+		}	
 	}
-
-	//generate random number of cycles (25-50)
-	public static int operationCycle() {
-		return (int)(Math.random() * 25) + 25;
-	}
-
-	//the state of the process
-	public static String state(String process, String memory, String state) {	
-		switch (state.toUpperCase()) {
-			case "NEW":
-				memUsage = Integer.parseInt(memory);
-				memLeft = MAX_MEMORY - memUsage;
-				if(memLeft <= MAX_MEMORY) {
-					state = "READY";
-				} else {
-					state = "WAIT";
-				}
-			case "READY":
-				return process;	
-			case "RUN":
-				return process;
-			case "WAIT":
-				return process;
-			case "EXIT":
-				memUsage = Integer.parseInt(memory);
-				memLeft +=  memUsage;
-				return process;
-			default:
-				System.out.println("Cannot do job");
+	
+	public static void print(ArrayList<Process> queue) {
+		for(int i=0; i< queue.size(); i++) {
+			System.out.println(queue.get(i));
 		}
-		
-		return "Error";
 	}
 
 }

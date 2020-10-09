@@ -15,7 +15,7 @@ public class Clock {
 		return count;
 	}
 	
-	public static void add(){
+	public static void count(){
 		count++;
 	}
 	

@@ -1,19 +1,11 @@
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.PriorityQueue;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.stream.IntStream;
 
 public class Scheduler {
-	private static Clock clock = new Clock();
-	private static Process process;
-	private PriorityQueue<Process> waitingQueue = new PriorityQueue<Process>();
-	ArrayList<Process> readyQueue = new ArrayList<Process>();
-	ArrayList<Process> jobQueue = new ArrayList<Process>();
+	private ArrayList<Process> readyQueue = new ArrayList<Process>();
 	
 	//set completion time of processes
-	//used in PriorityScheduling method
+	//used by PriorityScheduling method
 	private ArrayList<Process> setCT(ArrayList<Process> processes){
 		int n = processes.size();
 		
@@ -25,8 +17,7 @@ public class Scheduler {
 				processes.get(i).pcb.setCompletiontime(processes.get(i-1).pcb.getCompletionTime() 
 						+ processes.get(i).pcb.getBurstTime());
 			}
-		}
-		
+		}	
 		return processes;
 	}
 	
@@ -49,9 +40,7 @@ public class Scheduler {
 					}
 				}
 			}
-		}
-		
-		
+		}	
 		return processes;
 	}
 	
@@ -131,8 +120,9 @@ public class Scheduler {
 			processes.get(i).pcb.setBurstTime(in.nextInt());
 		}
 		
-		//sort the queue SJF
+		//sort processes by minimum arrival time
 		processes = sortByArrivalTime(processes);
+		//then sort processes by minimum arrival time & minimum burst time
 		processes = sortByBurstTime(processes);
 		
 		//set turn around time and wait time
@@ -165,85 +155,9 @@ public class Scheduler {
 		processes = setTAT(processes);
 		processes = setWT(processes);
 		
-		for(int i = 0; i< n; i++) {
-			System.out.println(processes.get(i));
-		}
+		//set readyQueue to the sorted processes
+		readyQueue = processes;	
+		
+	}
 
-	}
-	
-	//Round Robin Scheduling Algorithm
-	public void RoundRobin(ArrayList<Process> processes, int quantum) {
-		int n = processes.size();
-		Scanner in = new Scanner(System.in);
-		
-		for(int i = 0; i < n; i++) {
-			System.out.println("Enter the arrival time of process " + i);
-			processes.get(i).pcb.setArrivalTime(in.nextInt());
-			System.out.println("Enter the burst time of process " + i);
-			processes.get(i).pcb.setBurstTime(in.nextInt());	
-		}
-		
-		processes = sortByArrivalTime(processes);
-		
-		boolean done= false;
-		int count= 0;
-		int remainingBurstTime[]= new int [n];
-	
-		//copy process burst times into array
-		for(int i = 0; i<processes.size(); i++) {
-			remainingBurstTime[i] = processes.get(i).pcb.getBurstTime();
-		}
-	       
-		do {	
-			for(int t = 0 ; t<processes.size(); t++ ){
-				if(t == 0) {
-					readyQueue.add(processes.get(t));
-					if(remainingBurstTime[t] > quantum) {
-						readyQueue.get(t).pcb.setCompletiontime(readyQueue.get(t).pcb.getArrivalTime() + quantum);
-						remainingBurstTime[t] -= quantum;
-					} else {
-						readyQueue.get(t).pcb.setCompletiontime(readyQueue.get(t).pcb.getArrivalTime() + readyQueue.get(t).pcb.getBurstTime());
-						remainingBurstTime[t] = 0;
-					}
-				} else {
-					readyQueue.add(jobQueue.get(0));
-					if(remainingBurstTime[t] > quantum) {
-						readyQueue.get(t).pcb.setCompletiontime(readyQueue.get(t-1).pcb.getCompletionTime() + quantum);
-						remainingBurstTime[t] -= quantum;
-					} else {
-						readyQueue.get(t).pcb.setCompletiontime(readyQueue.get(t-1).pcb.getCompletionTime() + readyQueue.get(t).pcb.getBurstTime());
-						remainingBurstTime[t] = 0;
-					}
-				}
-				
-				
-				for(int j = t+1 ; j<processes.size(); j++){
-					if(processes.get(j).pcb.getArrivalTime() <= processes.get(t).pcb.getCompletionTime()) {
-						jobQueue.add(processes.get(j));
-						System.out.println("added " + processes.get(j));
-					} else {
-						break;
-					}
-				}
-				
-				if(remainingBurstTime[t] > 0) {
-					jobQueue.add(processes.get(t));
-				}
-				
-				jobQueue.remove(0);
-			}
-			
-			if(jobQueue.size() == 0) done = true;
-			
-		} while(!done);
-		
-		//copy process burst times into remainingTime array
-		System.out.println(jobQueue.size());
-		for(int k = 0; k < n; k++) {
-//			remainingTime[k] = processes.get(k).pcb.getBurstTime();
-			System.out.println("ready queue");
-			System.out.println(readyQueue.get(k));
-		}
-		
-	}
 }
