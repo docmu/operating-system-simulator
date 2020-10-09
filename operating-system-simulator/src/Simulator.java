@@ -20,7 +20,7 @@ public class Simulator{
 	public static int memUsage;
 	public static int memLeft;
 	public static int run = 0;
-	public static int quantum = 5;
+	public static int quantum = 3;
 	
 	public static void main(String[] args) throws IOException {
 		
@@ -38,7 +38,7 @@ public class Simulator{
 //			processes[i] = process;
 		}
 		
-		System.out.println("Choose a scheduling algorithm:" + "\n1:Shortest Job First" + "\n2:Round Robin");
+		System.out.println("Choose a scheduling algorithm:" + "\n1:Shortest Job First" + "\n2:Priority Scheduling");
 		in = new Scanner(System.in);
 		int schedulerType = in.nextInt();
 		
@@ -52,7 +52,7 @@ public class Simulator{
 				scheduler.SJF(processes);
 				break;
 			case 2:
-				scheduler.RoundRobin(processes, quantum);
+				scheduler.PriorityScheduling(processes);
 				break;
 		}
 	}

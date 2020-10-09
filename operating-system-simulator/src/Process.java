@@ -33,10 +33,11 @@ public class Process {
 		return "PROCESS: name = " + pcb.name
 				+ ", pid = " + pcb.pid
 				+ ", memoryRequirement = " + pcb.memRequirement
-				+ ", burstTime = " + pcb.burstTime
 				+ ", arrivalTime = " + pcb.arrivalTime
-				+ ", waitTime = " + pcb.waitTime
+				+ ", burstTime = " + pcb.burstTime
+				+ ", completionTime = " + pcb.completionTime
 				+ ", turnAroundTime = " + pcb.turnAroundTime 
+				+ ", waitTime = " + pcb.waitTime
 				+ ", numCycles = " + numCycles
 				+ "\n";
 	}
