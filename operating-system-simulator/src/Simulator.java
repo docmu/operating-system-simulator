@@ -38,7 +38,6 @@ public class Simulator{
 		
 		schedule(schedulerType);
 		readFile();
-//		print(readyQueue);
 	}
 	
 	public static void initProcess(String fileName) throws FileNotFoundException, IOException {
@@ -63,33 +62,30 @@ public class Simulator{
 				scheduler.PriorityScheduling(readyQueue);
 				break;
 		}
-		dispatcher.init(readyQueue);
+		dispatcher.updateState(readyQueue);
 	}
 	
 	//execute commands
 	public static void readFile() throws FileNotFoundException, IOException {
-		System.out.println("inside readFile");
 		//loop through all processes
 		for(int i = 0; i < readyQueue.size(); i++) {
 			System.out.println(i + " " + readyQueue.get(0));
 			BufferedReader br = new BufferedReader(new FileReader(readyQueue.get(0).name));
-//				System.out.println(readyQueue.get(i).name);
 			    String line; 
 			    //read each line of process
 			    while ((line = br.readLine()) != null) {
 			    	String[] instruction = line.split(" ");
-//			    	for(int j = 0; j < instruction.length; j++) {
 			    	if(counter > 0) {
 			    		for(int j = 0; j < instruction.length; j++) {
 			    			System.out.print(instruction[j]);
 			    		}
 			    		dispatcher.execute(readyQueue.get(i), instruction);
 			    	}
-//			    	}
 			    	//move onto next line of program when done executing instruction
 			    	counter++;
 		    		process.setCurrLine(counter);
 			    }
+			    //reset line counter
 			    counter = 0;
 			
 			System.out.println();

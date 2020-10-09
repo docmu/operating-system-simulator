@@ -10,7 +10,7 @@ public class Dispatcher {
 	private ArrayList<Process> readyQueue;
 	private Clock clock = new Clock();
 	
-	public void init(ArrayList<Process> readyQueue) {
+	public void updateState(ArrayList<Process> readyQueue) {
 		this.readyQueue = readyQueue;
 		for(int i = 0; i < readyQueue.size(); i++) {
 			switch (readyQueue.get(i).pcb.getState()) {
