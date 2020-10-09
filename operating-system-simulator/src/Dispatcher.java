@@ -13,13 +13,23 @@ public class Dispatcher {
 	public void updateState(Process process) {
 		if(memLeft <= MAX_MEMORY) {
 			process.pcb.setState("READY");
+			//move back to readyQueue if process was previously in waitingQueue
+			if(!readyQueue.contains(process) && waitingQueue.contains(process)) {
+				readyQueue.add(process);
+				waitingQueue.remove(process);
+			}
 		} else {
 			process.pcb.setState("WAIT");
+			//move back to waitingQueue if process was previously in readyQueue
+			if (readyQueue.contains(process) && !waitingQueue.contains(process)) {
+				waitingQueue.add(process);
+				readyQueue.remove(process);
+			}
 		}
 	}
 	
 	//move all processes from NEW to either READY or WAIT
-	public void initState(ArrayList<Process> readyQueue) {
+	public ArrayList<Process> initState(ArrayList<Process> readyQueue) {
 		this.readyQueue = readyQueue;
 		for(int i = 0; i < readyQueue.size(); i++) {
 			switch (readyQueue.get(i).pcb.getState()) {
@@ -31,8 +41,8 @@ public class Dispatcher {
 					} else {
 						readyQueue.get(i).pcb.setState("WAIT");
 						//not enough memory, move to waiting queue
-//						waitingQueue.add(readyQueue.get(i));
-//						readyQueue.remove(readyQueue.get(i));
+						waitingQueue.add(readyQueue.get(i));
+						readyQueue.remove(readyQueue.get(i));
 					}
 				break;
 				default:
@@ -41,6 +51,7 @@ public class Dispatcher {
 			}
 		
 		}
+		return readyQueue;
 	}
 	
 	public void terminateProcess(Process process) {
@@ -61,15 +72,13 @@ public class Dispatcher {
 			//move process to waiting queue
 			waitingQueue.add(process);
 			readyQueue.remove(process);
-			//stay in waiting queue for n cycles
+			//update state to RUN
+			process.pcb.setState("RUN");
+			//stay in waiting queue for n cycles until it finishes running
 			for(int i = 1; i <= numCycles; i++) {
 				clock.count();
 				process.setNumCycles(process.getNumCycles() - 1);
 			}
-			//move process back to readyQueue once finished
-			readyQueue.add(process);
-			waitingQueue.remove(process);
-			
 		} else if(line[0].equals("CALCULATE")) {
 			//update state to RUN
 			process.pcb.setState("RUN");

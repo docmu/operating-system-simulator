@@ -63,7 +63,7 @@ public class Simulator{
 				scheduler.PriorityScheduling(readyQueue);
 				break;
 		}
-		dispatcher.initState(readyQueue);
+		readyQueue = dispatcher.initState(readyQueue);
 	}
 	
 	//execute commands
@@ -97,27 +97,31 @@ public class Simulator{
 	
 	//execute commands
 	public static void readFile() throws FileNotFoundException, IOException {
-		BufferedReader br = null;
+		BufferedReader br = null; // = new BufferedReader(new FileReader(readyQueue.get(0).name));
 		//loop through all processes
+		//execute the process at the head of the queue
 		for(int i = 0; i < readyQueue.size(); i++) {
-//			System.out.println("readyQueue(0) " + readyQueue.get(0));
 			br = new BufferedReader(new FileReader(readyQueue.get(0).name));
 			String line; 
 			//read each line of process
 			while ((line = br.readLine()) != null) {
-			    String[] instruction = line.split(" ");
-			    if(counter > 0) {
-			    	dispatcher.execute(readyQueue.get(i), instruction);
+				String[] instruction = line.split(" ");
+			    if(instruction.length > 1) {
+			    	readyQueue.get(0).setCurrLine(line);
+			    	System.out.println(readyQueue.get(0).getCurrLine());
+			    	dispatcher.execute(readyQueue.get(0), instruction);
 			    }
 			    //move onto next line of program when done executing instruction
-			    counter++;
-		    	process.setCurrLine(counter);
+//			    counter++;
+//			    if(readyQueue.size() > 0) {
+//			    	br = new BufferedReader(new FileReader(readyQueue.get(0).name));
+//			    }
 			}
 			//reset line counter
-			counter = 0;
+//			counter = 0;
 			//process is finished, terminate it
 			dispatcher.terminateProcess(readyQueue.get(i));
-//			    readyQueue.remove(readyQueue.get(0));
+//			readyQueue.remove(readyQueue.get(0));
 			
 			System.out.println();
 		}	

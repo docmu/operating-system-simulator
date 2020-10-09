@@ -3,7 +3,7 @@ public class Process {
 	public PCB pcb;
 	public String name;
 	public int numCycles = 0;; //number of cycles to run/left to run
-	public int currLine = 0; //the line in operation
+	public String currLine = ""; //the line in operation
 	
 	public Process() {
 		pcb = new PCB();
@@ -29,11 +29,18 @@ public class Process {
 		return numCycles;
 	}
 	
-	public void setCurrLine(int lineNum) {
-		this.currLine = lineNum;
+//	public void setCurrLine(int lineNum) {
+//		this.currLine = lineNum;
+//	}
+//	
+//	public int getCurrLine() {
+//		return currLine;
+//	}
+	public void setCurrLine(String line) {
+		this.currLine = line;
 	}
 	
-	public int getCurrLine() {
+	public String getCurrLine() {
 		return currLine;
 	}
 	
