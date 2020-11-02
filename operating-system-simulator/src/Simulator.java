@@ -38,7 +38,7 @@ public class Simulator{
 		
 		schedule(schedulerType);
 		readFile();
-		print(readyQueue);
+//		print(readyQueue);
 	}
 	
 	public static void initProcess(String fileName) throws FileNotFoundException, IOException {
@@ -67,70 +67,40 @@ public class Simulator{
 	}
 	
 	//execute commands
-//	public static void readFile() throws FileNotFoundException, IOException {
-//		if(readyQueue.isEmpty()) return;
-//		
-//		BufferedReader br = new BufferedReader(new FileReader(readyQueue.get(0).name));
-//		String line; 
-//		//read each line of process
-//		while ((line = br.readLine()) != null) {
-//			//loop through all processes
-//			for(int i = 0; i < readyQueue.size(); i++) {
-//				String[] instruction = line.split(" ");
-//				if(counter > 0) {
-//				    dispatcher.execute(readyQueue.get(i), instruction);
-//				 }
-//				 //move onto next line of program when done executing instruction
-//				 counter++;
-//			     process.setCurrLine(counter);
-//			}
-//		}
-//		//reset line counter
-//		counter = 0;
-//		//process is finished, terminate it
-////		dispatcher.terminate(readyQueue.get(i));
-////		readyQueue.remove(readyQueue.get(0));
-//		
-//		readFile();
-//			
-//	}
-	
-	//execute commands
-	public static void readFile() throws FileNotFoundException, IOException {
-		BufferedReader br = null; // = new BufferedReader(new FileReader(readyQueue.get(0).name));
-		//loop through all processes
-		//execute the process at the head of the queue
-		for(int i = 0; i < readyQueue.size(); i++) {
-			br = new BufferedReader(new FileReader(readyQueue.get(0).name));
-			String line; 
-			//read each line of process
-			while ((line = br.readLine()) != null) {
-				String[] instruction = line.split(" ");
-			    if(instruction.length > 1) {
-			    	readyQueue.get(0).setCurrLine(line);
-			    	System.out.println(readyQueue.get(0).getCurrLine());
-			    	dispatcher.execute(readyQueue.get(0), instruction);
-			    }
-			    //move onto next line of program when done executing instruction
-//			    counter++;
-//			    if(readyQueue.size() > 0) {
-//			    	br = new BufferedReader(new FileReader(readyQueue.get(0).name));
-//			    }
-			}
-			//reset line counter
-//			counter = 0;
-			//process is finished, terminate it
-			dispatcher.terminateProcess(readyQueue.get(i));
-//			readyQueue.remove(readyQueue.get(0));
+		public static void readFile() throws FileNotFoundException, IOException {
+			BufferedReader br = null; 
+			//loop through all processes
+			//execute the process at the head of the queue
+			while(readyQueue.size() > 0) {
+				int lineCount = 0;
+				boolean criticalSection = false;
+				Process process = readyQueue.get(0);
+				br = new BufferedReader(new FileReader(process.getName()));
+				String line; 
+				//read each line of process
+				while ((line = br.readLine()) != null) {
+					String[] instruction = line.split(" ");
+					//if the line is an instruction then execute
+				    if(instruction.length > 1) {
+				    	//let the first instruction be the critical section
+				    	if(process.getLineNum() == 1) {
+				    		dispatcher.executeCriticalSection(process, instruction);
+				    	} else {
+				    		dispatcher.execute(process, instruction);
+				    	}
+				    	process.setCurrLine(line);
+				    	System.out.println(process.getLineNum() + " " + process.getCurrLine());
+				    }
+				    process.incrementLineNum();
+				}
+				dispatcher.terminateProcess(process);
+				System.out.println();
+			}	
 			
-			System.out.println();
-		}	
-		
-		br.close();
-	}
+			br.close();
+		}
 	
 	public static void print(ArrayList<Process> queue) {
-//		System.out.println("inside print");
 		for(int i=0; i< queue.size(); i++) {
 			System.out.println(queue.get(i));
 		}

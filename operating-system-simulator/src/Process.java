@@ -4,6 +4,7 @@ public class Process {
 	public String name;
 	public int numCycles = 0;; //number of cycles to run/left to run
 	public String currLine = ""; //the line in operation
+	public int lineNum = 0;
 	
 	public Process() {
 		pcb = new PCB();
@@ -29,13 +30,14 @@ public class Process {
 		return numCycles;
 	}
 	
-//	public void setCurrLine(int lineNum) {
-//		this.currLine = lineNum;
-//	}
-//	
-//	public int getCurrLine() {
-//		return currLine;
-//	}
+	public void incrementLineNum() {
+		lineNum++;
+	}
+	
+	public int getLineNum() {
+		return lineNum;
+	}
+	
 	public void setCurrLine(String line) {
 		this.currLine = line;
 	}
