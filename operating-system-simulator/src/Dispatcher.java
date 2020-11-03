@@ -1,3 +1,9 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 // responsible for moving processes between queues, context switch with PCBs, & changing the state of processes
@@ -62,9 +68,71 @@ public class Dispatcher {
 	
 	
 	public void executeCriticalSection(Process process, String[] line) {
-		//entry section
-		execute(process, line); //critical section
-		//exit section
+		boolean lock = true;
+		while(lock) {
+			//entry section
+			execute(process, line); //critical section
+			//exit section
+			lock = false;
+		}
+	}
+	
+	public void createChildProcess(Process process, int num) {
+		//create the child process as a copy of the parent process
+		Process childProcess = new Process();
+		childProcess.setName(process.getName().substring(0, process.getName().length()-4) + "child" + Integer.toString(num) + ".txt");	
+		childProcess.pcb.setMemRequirement(process.pcb.getMemRequirement());
+		childProcess.pcb.setArrivalTime(process.pcb.getArrivalTime());
+		childProcess.pcb.setBurstTime(process.pcb.getBurstTime());
+		childProcess.pcb.setCompletiontime(process.pcb.getCompletionTime());
+		childProcess.pcb.setTurnAroundTime(process.pcb.getTurnAroundTime());
+		childProcess.pcb.setWaitTime(process.pcb.getWaitTime());
+		
+		//create the file
+		createFile(childProcess.getName());
+		
+		//write to file
+		writeToFile(childProcess.getName(), process.getName());
+		
+//		System.out.println(process);
+//		System.out.println(childProcess);
+		
+		//add the childProcess to the readyQueue
+		readyQueue.add(childProcess);
+	}
+	
+	//make a copy of the parent process without FORK instruction
+	public void writeToFile(String childProcess, String parentProcess) {
+		try {
+			  PrintStream fileStream = new PrintStream(new File(childProcess));
+		      BufferedReader br = new BufferedReader(new FileReader(parentProcess));
+		      String line; 
+			  while ((line = br.readLine()) != null) {
+				  if(!line.contains("FORK")) {
+					  fileStream.println(line);
+					  System.out.println(line);
+				  }
+			  }
+		      fileStream.close();
+		      
+		    } catch (IOException e) {
+		      System.out.println("An error occurred.");
+		      e.printStackTrace();
+		    }
+	}
+	
+	public void createFile(String childProcess) {
+		try {
+		      File file = new File("C:\\Users\\Ctint\\git\\operating-system-simulator\\operating-system-simulator\\" + childProcess);
+		      if (file.createNewFile()) {
+		        System.out.println("File created: " + file.getName());
+		      } else {
+		        System.out.println("File already exists.");
+		      }
+		    } catch (IOException e) {
+		      System.out.println("An error occurred.");
+		      e.printStackTrace();
+		    }
 	}
 	
 	//execute command by line
@@ -94,6 +162,13 @@ public class Dispatcher {
 				for(int i = 1; i <= numCycles; i++) {
 					clock.count();
 					process.setNumCycles(process.getNumCycles() - 1);
+				}
+			} else if(line[0].equals("FORK")) {
+				//update state to RUN
+				process.pcb.setState("RUN");
+				//generate n child processes
+				for(int i = 1; i <= numCycles; i++) {
+					createChildProcess(process, i);
 				}
 			}
 			

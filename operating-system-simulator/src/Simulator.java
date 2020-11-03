@@ -89,7 +89,7 @@ public class Simulator{
 				    		dispatcher.execute(process, instruction);
 				    	}
 				    	process.setCurrLine(line);
-				    	System.out.println(process.getLineNum() + " " + process.getCurrLine());
+//				    	System.out.println(process.getLineNum() + " " + process.getCurrLine());
 				    }
 				    process.incrementLineNum();
 				}
