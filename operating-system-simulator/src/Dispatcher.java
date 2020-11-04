@@ -1,11 +1,9 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.concurrent.Semaphore;;
 
 // responsible for moving processes between queues, context switch with PCBs, & changing the state of processes
 public class Dispatcher {
@@ -64,6 +62,7 @@ public class Dispatcher {
 	// set state to TERMINATED and remove it from the readyQueue
 	public void terminateProcess(Process process) {
 		process.pcb.setState("TERMINATED");
+		System.out.println(process);
 		readyQueue.remove(process);
 		memLeft += process.pcb.getMemRequirement();
 		
@@ -75,6 +74,7 @@ public class Dispatcher {
 			if(readyQueue.get(i).getName().contains(
 					process.getName().substring(0, process.getName().length()-4))) {
 				readyQueue.get(i).pcb.setState("TERMINATED");
+				System.out.println(readyQueue.get(i));
 				readyQueue.remove(readyQueue.get(i));
 			} 
 			i--;
@@ -150,87 +150,46 @@ public class Dispatcher {
 	}
 	
 	//execute command by line
-		public void execute(Process process, String[] line) {
-			int min = Integer.parseInt(line[1]);
-			int max = Integer.parseInt(line[2]);
-			int numCycles = operationCycle(min, max);
-			process.setNumCycles(numCycles);
+	public void execute(Process process, String[] line) {
+		int min = Integer.parseInt(line[1]);
+		int max = Integer.parseInt(line[2]);
+		int numCycles = operationCycle(min, max);
+		process.setNumCycles(numCycles);
 
-			if(line[0].equals("I/O")) {
-				//update state to WAIT
-				process.pcb.setState("WAIT");
-				//move process to waiting queue
-				waitingQueue.add(process);
-//				readyQueue.remove(process);
-				//update state to RUN
-				process.pcb.setState("RUN");
-				//stay in waiting queue for n cycles until it finishes running
-				for(int i = 1; i <= numCycles; i++) {
-					clock.count();
-					process.setNumCycles(process.getNumCycles() - 1);
-				}
-			} else if(line[0].equals("CALCULATE")) {
-				//update state to RUN
-				process.pcb.setState("RUN");
-				//stays on cpu for n cycles
-				for(int i = 1; i <= numCycles; i++) {
-					clock.count();
-					process.setNumCycles(process.getNumCycles() - 1);
-				}
-			} else if(line[0].equals("FORK")) {
-				//update state to RUN
-				process.pcb.setState("RUN");
-				//generate n child processes
-				for(int i = 1; i <= numCycles; i++) {
-					createChildProcess(process, i);
-				}
+		if(line[0].equals("I/O")) {
+			//update state to WAIT
+			process.pcb.setState("WAIT");
+			//move process to waiting queue
+			waitingQueue.add(process);
+			//update state to RUN
+			process.pcb.setState("RUN");
+			//stay in waiting queue for n cycles until it finishes running
+			for(int i = 1; i <= numCycles; i++) {
+				clock.count();
+				process.setNumCycles(process.getNumCycles() - 1);
 			}
-			
-			//update state
-			updateState(process);
-			//reset the clock
-			clock.reset();
+		} else if(line[0].equals("CALCULATE")) {
+			//update state to RUN
+			process.pcb.setState("RUN");
+			//stays on cpu for n cycles
+			for(int i = 1; i <= numCycles; i++) {
+				clock.count();
+				process.setNumCycles(process.getNumCycles() - 1);
+			}
+		} else if(line[0].equals("FORK")) {
+			//update state to RUN
+			process.pcb.setState("RUN");
+			//generate n child processes
+			for(int i = 1; i <= numCycles; i++) {
+				createChildProcess(process, i);
+			}
 		}
-	
-	//execute command by line
-//	public void execute(Process process, String[] line) {
-//		int min = Integer.parseInt(line[1]);
-//		int max = Integer.parseInt(line[2]);
-//		int numCycles = operationCycle(min, max);
-//		process.setNumCycles(numCycles);
-//		
-//		if(line[0].equals("I/O")) {
-//			//update state to WAIT
-//			process.pcb.setState("WAIT");
-//			//move process to waiting queue
-////			waitingQueue.add(process);
-////			readyQueue.remove(process);
-//			//update state to RUN
-//			process.pcb.setState("RUN");
-//			//stay in waiting queue for n cycles until it finishes running
-//			for(int i = 1; i <= numCycles; i++) {
-//				clock.count();
-//				process.setNumCycles(process.getNumCycles() - 1);
-//			}
-//			//done executing, put back on readyQueue
-//			readyQueue.add(process);
-//		} else if(line[0].equals("CALCULATE")) {
-//			//update state to RUN
-//			process.pcb.setState("RUN");
-//			//stays on cpu for n cycles
-//			for(int i = 1; i <= numCycles; i++) {
-//				clock.count();
-//				process.setNumCycles(process.getNumCycles() - 1);
-//			}
-//		}
-//		
-//		//update state
-////		updateState(process);
-//		//increment line number
-//		process.incrementLineNum();
-//		//reset the clock
-//		clock.reset();
-//	}
+			
+		//update state
+		updateState(process);
+		//reset the clock
+		clock.reset();
+	}
 	
 	//generate random number of cycles within the range
 	public int operationCycle(int min, int max) {

@@ -16,8 +16,6 @@ public class Simulator{
 	public static ArrayList<Process> readyQueue = new ArrayList<Process>();
 	public static Scheduler scheduler = new Scheduler();
 	public static Dispatcher dispatcher = new Dispatcher();
-	private static Clock clock = new Clock();
-	private static int counter = 0;
 	
 	public static void main(String[] args) throws IOException {	
 		System.out.println("Enter the number of processes: ");	
@@ -38,7 +36,6 @@ public class Simulator{
 		
 		schedule(schedulerType);
 		readFile();
-//		print(readyQueue);
 	}
 	
 	// initialize a new process 
@@ -68,40 +65,33 @@ public class Simulator{
 	}
 	
 	//execute commands
-		public static void readFile() throws FileNotFoundException, IOException {
-			BufferedReader br = null; 
-			//loop through all processes
-			//execute the process at the head of the queue
-			while(readyQueue.size() > 0) {
-				Process process = readyQueue.get(0);
-				br = new BufferedReader(new FileReader(process.getName()));
-				String line; 
-				//read each line of process
-				while ((line = br.readLine()) != null) {
-					String[] instruction = line.split(" ");
-					//if the line is an instruction then execute
-				    if(instruction.length > 1) {
-				    	//let the first instruction be the critical section
-				    	if(process.getLineNum() == 1) {
-				    		dispatcher.executeCriticalSection(process, instruction);
-				    	} else {
-				    		dispatcher.execute(process, instruction);
-				    	}
-				    	process.setCurrLine(line);
-//				    	System.out.println(process.getLineNum() + " " + process.getCurrLine());
+	public static void readFile() throws FileNotFoundException, IOException {
+		BufferedReader br = null; 
+		//loop through all processes
+		//execute the process at the head of the queue
+		while(readyQueue.size() > 0) {
+			Process process = readyQueue.get(0);
+			br = new BufferedReader(new FileReader(process.getName()));
+			String line; 
+			//read each line of process
+			while ((line = br.readLine()) != null) {
+				String[] instruction = line.split(" ");
+				//if the line is an instruction then execute
+				if(instruction.length > 1) {
+				    //let the first instruction be the critical section
+				    if(process.getLineNum() == 1) {
+				    	dispatcher.executeCriticalSection(process, instruction);
+				    } else {
+				    	dispatcher.execute(process, instruction);
 				    }
-				    process.incrementLineNum();
+				    process.setCurrLine(line);
+				 }
+				 process.incrementLineNum();
 				}
-				dispatcher.terminateProcess(process);
-			}	
+			dispatcher.terminateProcess(process);
+		}	
 			
-			br.close();
-		}
-	
-	public static void print(ArrayList<Process> queue) {
-		for(int i=0; i< queue.size(); i++) {
-			System.out.println(queue.get(i));
-		}
+		br.close();
 	}
 
 }
