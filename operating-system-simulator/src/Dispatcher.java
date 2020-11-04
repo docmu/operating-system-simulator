@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;;
 
 // responsible for moving processes between queues, context switch with PCBs, & changing the state of processes
 public class Dispatcher {
@@ -60,23 +61,39 @@ public class Dispatcher {
 		return readyQueue;
 	}
 	
+	// set state to TERMINATED and remove it from the readyQueue
 	public void terminateProcess(Process process) {
 		process.pcb.setState("TERMINATED");
 		readyQueue.remove(process);
 		memLeft += process.pcb.getMemRequirement();
+		
+		int i = readyQueue.size() - 1;
+		//cascading termination of child processes
+		while(readyQueue.size() > 0) {
+			if(i < 1) break;
+			//if the parent process has child processes, terminate it and remove from the readyQueue
+			if(readyQueue.get(i).getName().contains(
+					process.getName().substring(0, process.getName().length()-4))) {
+				readyQueue.get(i).pcb.setState("TERMINATED");
+				readyQueue.remove(readyQueue.get(i));
+			} 
+			i--;
+		}
 	}
 	
 	
 	public void executeCriticalSection(Process process, String[] line) {
-		boolean lock = true;
-		while(lock) {
+		//when unlocked the critical section is available for execution
+		boolean unlock = true;
+		while(unlock) {
 			//entry section
 			execute(process, line); //critical section
 			//exit section
-			lock = false;
+			unlock = false;
 		}
 	}
 	
+	//creation of child process
 	public void createChildProcess(Process process, int num) {
 		//create the child process as a copy of the parent process
 		Process childProcess = new Process();
@@ -94,9 +111,6 @@ public class Dispatcher {
 		//write to file
 		writeToFile(childProcess.getName(), process.getName());
 		
-//		System.out.println(process);
-//		System.out.println(childProcess);
-		
 		//add the childProcess to the readyQueue
 		readyQueue.add(childProcess);
 	}
@@ -110,7 +124,6 @@ public class Dispatcher {
 			  while ((line = br.readLine()) != null) {
 				  if(!line.contains("FORK")) {
 					  fileStream.println(line);
-					  System.out.println(line);
 				  }
 			  }
 		      fileStream.close();
@@ -121,6 +134,7 @@ public class Dispatcher {
 		    }
 	}
 	
+	//create new child program
 	public void createFile(String childProcess) {
 		try {
 		      File file = new File("C:\\Users\\Ctint\\git\\operating-system-simulator\\operating-system-simulator\\" + childProcess);

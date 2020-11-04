@@ -41,6 +41,7 @@ public class Simulator{
 //		print(readyQueue);
 	}
 	
+	// initialize a new process 
 	public static void initProcess(String fileName) throws FileNotFoundException, IOException {
 		if(!fileName.contains(".txt")) {
 			fileName += ".txt";
@@ -72,8 +73,6 @@ public class Simulator{
 			//loop through all processes
 			//execute the process at the head of the queue
 			while(readyQueue.size() > 0) {
-				int lineCount = 0;
-				boolean criticalSection = false;
 				Process process = readyQueue.get(0);
 				br = new BufferedReader(new FileReader(process.getName()));
 				String line; 
@@ -94,7 +93,6 @@ public class Simulator{
 				    process.incrementLineNum();
 				}
 				dispatcher.terminateProcess(process);
-				System.out.println();
 			}	
 			
 			br.close();
