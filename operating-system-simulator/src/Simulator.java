@@ -11,7 +11,6 @@ import java.util.Scanner;
 import java.util.Stack;
 
 public class Simulator{
-	
 	public static Process process;
 	public static ArrayList<Process> readyQueue = new ArrayList<Process>();
 	public static Scheduler scheduler = new Scheduler();
@@ -67,8 +66,7 @@ public class Simulator{
 	//execute commands
 	public static void readFile() throws FileNotFoundException, IOException {
 		BufferedReader br = null; 
-		//loop through all processes
-		//execute the process at the head of the queue
+		//loop through all processes & execute the process at the head of the queue
 		while(readyQueue.size() > 0) {
 			Process process = readyQueue.get(0);
 			br = new BufferedReader(new FileReader(process.getName()));
