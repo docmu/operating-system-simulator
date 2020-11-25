@@ -15,8 +15,10 @@ public class Simulator{
 	public static ArrayList<Process> readyQueue = new ArrayList<Process>();
 	public static Scheduler scheduler = new Scheduler();
 	public static Dispatcher dispatcher = new Dispatcher();
+	public static ArrayList<Thread> threads = new ArrayList<Thread>();
 	
 	public static void main(String[] args) throws IOException {	
+	
 		System.out.println("Enter the number of processes: ");	
 		Scanner in = new Scanner(System.in);
 		int numProcesses = in.nextInt();
@@ -25,6 +27,8 @@ public class Simulator{
 			System.out.println(i + ": Enter the program name: ");
 			in = new Scanner(System.in);
 			String program = in.next();
+			// assign a thread for each process
+			threads.add(new Thread());
 			initProcess(program);	
 			readyQueue.add(process);
 		}

@@ -8,12 +8,17 @@ import java.util.ArrayList;
 // responsible for moving processes between queues, context switch with PCBs, & changing the state of processes
 public class Dispatcher {
 	
-	private final int MAX_MEMORY = 2048;
+	private final int MAX_MEMORY = 300000;
+	private final int CACHE_MEMORY = 300;
 	private int memUsage;
 	private int memLeft;
 	private ArrayList<Process> waitingQueue = new ArrayList<Process>();
+	private ArrayList<Process> waitingQueueA = new ArrayList<Process>(); // keyboard
+	private ArrayList<Process> waitingQueueB = new ArrayList<Process>(); // monitor
+	private ArrayList<Process> waitingQueueC = new ArrayList<Process>(); //usb
 	private ArrayList<Process> readyQueue;
 	private Clock clock = new Clock();
+	private boolean unlock;
 	
 	public void updateState(Process process) {
 		if(memLeft <= MAX_MEMORY) {
@@ -84,7 +89,7 @@ public class Dispatcher {
 	
 	public void executeCriticalSection(Process process, String[] line) {
 		//when unlocked the critical section is available for execution
-		boolean unlock = true;
+		unlock = true;
 		while(unlock) {
 			//entry section
 			execute(process, line); //critical section
@@ -156,26 +161,41 @@ public class Dispatcher {
 		int numCycles = operationCycle(min, max);
 		process.setNumCycles(numCycles);
 
-		if(line[0].equals("I/O")) {
+		if(line[0].contains("I/O")) {
 			//update state to WAIT
 			process.pcb.setState("WAIT");
-			//move process to waiting queue
-			waitingQueue.add(process);
+			//move process to corresponding waiting queue
+			if(line[0].equals("I/Oa")) {
+				//keyboard
+				waitingQueueA.add(process);
+			} else if(line[0].equals("I/Ob")) {
+				//monitor
+				waitingQueueB.add(process);
+			} else if(line[0].equals("I/Oc")) {
+				//usb devices
+				waitingQueueC.add(process);
+			}
 			//update state to RUN
 			process.pcb.setState("RUN");
 			//stay in waiting queue for n cycles until it finishes running
 			for(int i = 1; i <= numCycles; i++) {
 				clock.count();
 				process.setNumCycles(process.getNumCycles() - 1);
-			}
+			}		
 		} else if(line[0].equals("CALCULATE")) {
 			//update state to RUN
 			process.pcb.setState("RUN");
-			//stays on cpu for n cycles
-			for(int i = 1; i <= numCycles; i++) {
-				clock.count();
-				process.setNumCycles(process.getNumCycles() - 1);
-			}
+			// if process can execute in cache
+			if(process.pcb.getMemRequirement() <= CACHE_MEMORY) {
+				CacheMemory cacheMem = new CacheMemory(process, clock);
+				cacheMem.execute(numCycles);
+			} 
+			// else, execute in main memory
+			else {
+				MainMemory mainMem = new MainMemory(process, clock);
+				mainMem.execute(numCycles);
+				
+			}			
 		} else if(line[0].equals("FORK")) {
 			//update state to RUN
 			process.pcb.setState("RUN");
@@ -183,12 +203,12 @@ public class Dispatcher {
 			for(int i = 1; i <= numCycles; i++) {
 				createChildProcess(process, i);
 			}
-		}
-			
+		}			
 		//update state
 		updateState(process);
 		//reset the clock
 		clock.reset();
+		
 	}
 	
 	//generate random number of cycles within the range
