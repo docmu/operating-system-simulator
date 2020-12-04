@@ -86,7 +86,6 @@ public class Dispatcher {
 		}
 	}
 	
-	
 	public void executeCriticalSection(Process process, String[] line) {
 		//when unlocked the critical section is available for execution
 		unlock = true;
@@ -189,12 +188,13 @@ public class Dispatcher {
 			if(process.pcb.getMemRequirement() <= CACHE_MEMORY) {
 				CacheMemory cacheMem = new CacheMemory(process, clock);
 				cacheMem.execute(numCycles);
+				cacheMem.clear();
 			} 
 			// else, execute in main memory
 			else {
 				MainMemory mainMem = new MainMemory(process, clock);
 				mainMem.execute(numCycles);
-				
+				mainMem.clear();
 			}			
 		} else if(line[0].equals("FORK")) {
 			//update state to RUN

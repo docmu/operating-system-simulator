@@ -27,8 +27,6 @@ public class Simulator{
 			System.out.println(i + ": Enter the program name: ");
 			in = new Scanner(System.in);
 			String program = in.next();
-			// assign a thread for each process
-			threads.add(new Thread());
 			initProcess(program);	
 			readyQueue.add(process);
 		}
@@ -51,6 +49,8 @@ public class Simulator{
 		    process.setName(fileName);
 		    String memReq = br.readLine();
 		    process.pcb.setMemRequirement(Integer.parseInt(memReq));
+		    // assign a thread for each process
+		 	threads.add(new Thread());
 		}
 	}
 	
@@ -68,11 +68,15 @@ public class Simulator{
 	}
 	
 	//execute commands
+	@SuppressWarnings("deprecation")
 	public static void readFile() throws FileNotFoundException, IOException {
 		BufferedReader br = null; 
 		//loop through all processes & execute the process at the head of the queue
 		while(readyQueue.size() > 0) {
 			Process process = readyQueue.get(0);
+			Thread thread = threads.get(0);
+			// start the thread
+			thread.start();
 			br = new BufferedReader(new FileReader(process.getName()));
 			String line; 
 			//read each line of process
@@ -91,6 +95,10 @@ public class Simulator{
 				 process.incrementLineNum();
 				}
 			dispatcher.terminateProcess(process);
+			// stop the thread
+			thread.stop();
+			// remove the thread when done
+			threads.remove(thread);
 		}	
 			
 		br.close();
