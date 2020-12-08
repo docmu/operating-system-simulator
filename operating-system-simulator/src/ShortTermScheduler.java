@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Scheduler {
+public class ShortTermScheduler {
 	private ArrayList<Process> readyQueue = new ArrayList<Process>();
 	
 	//set completion time of processes

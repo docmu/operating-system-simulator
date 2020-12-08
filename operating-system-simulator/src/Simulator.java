@@ -13,7 +13,6 @@ import java.util.Stack;
 public class Simulator{
 	public static Process process;
 	public static ArrayList<Process> readyQueue = new ArrayList<Process>();
-	public static Scheduler scheduler = new Scheduler();
 	public static Dispatcher dispatcher = new Dispatcher();
 	public static ArrayList<Thread> threads = new ArrayList<Thread>();
 	
@@ -31,11 +30,19 @@ public class Simulator{
 			readyQueue.add(process);
 		}
 		
-		System.out.println("Choose a scheduling algorithm:" + "\n1:Shortest Job First" + "\n2:Priority Scheduling");
+		System.out.println("Choose a scheduler:" + "\n1:Short Term Scheduler" + "\n2:Medium Term Scheduler");
 		in = new Scanner(System.in);
 		int schedulerType = in.nextInt();
 		
-		schedule(schedulerType);
+		switch(schedulerType) {
+			case 1: 
+				shortTermScheduling();
+				break;
+			case 2:
+				mediumTermScheduling();
+				break;
+		}
+		
 		readFile();
 	}
 	
@@ -54,16 +61,26 @@ public class Simulator{
 		}
 	}
 	
-	//invoke the scheduling algorithm
-	public static void schedule(int n) {	
-		switch(n) {
+	//invoke the short term scheduling algorithm
+	public static void shortTermScheduling() {	
+		ShortTermScheduler shortTermScheduler = new ShortTermScheduler();
+		System.out.println("Choose a scheduling algorithm:" + "\n1:Shortest Job First" + "\n2:Priority Scheduling");
+		Scanner scan = new Scanner(System.in);
+		int schedulingAlgorithm = scan.nextInt();
+		switch(schedulingAlgorithm) {
 			case 1:
-				scheduler.SJF(readyQueue);
+				shortTermScheduler.SJF(readyQueue);
 				break;
 			case 2:
-				scheduler.PriorityScheduling(readyQueue);
+				shortTermScheduler.PriorityScheduling(readyQueue);
 				break;
 		}
+		readyQueue = dispatcher.initState(readyQueue);
+	}
+	
+	// invoke the medium term scheduler
+	public static void mediumTermScheduling() {
+		MediumTermScheduler mediumTermScheduler = new MediumTermScheduler(readyQueue);
 		readyQueue = dispatcher.initState(readyQueue);
 	}
 	
